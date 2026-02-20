@@ -156,7 +156,7 @@
                     <option value="C">價錢 C</option>
                 </select>
                 <label style="font-size: 0.85rem;"><input type="checkbox" id="new-dinein"> 可內用</label>
-                <button class="btn-add" onclick="addNewFood()">加入</button>
+                <button class="btn-add" onclick="addNewFood()">加入並存檔</button>
             </div>
         </div>
     </div>
@@ -191,7 +191,8 @@
 </div>
 
 <script>
-    let data = [
+    // 優先從 localStorage 讀取，若無則使用預設數據
+    const defaultData = [
         { name: "愛廣場職人咖哩", price: "A", dineIn: false },
         { name: "愛廣場泰式", price: "B", dineIn: false },
         { name: "品香滷味燙", price: "A", dineIn: false },
@@ -226,6 +227,7 @@
         { name: "漢堡王", price: "B-C", dineIn: true }
     ];
 
+    let data = JSON.parse(localStorage.getItem('myFoodList')) || defaultData;
     let currentPool = [];
 
     function resetPool() {
@@ -255,13 +257,19 @@
         const nameInput = document.getElementById('new-name');
         const name = nameInput.value.trim();
         if (!name) return;
-        data.push({
+        
+        const newItem = {
             name: name,
             price: document.getElementById('new-price').value,
             dineIn: document.getElementById('new-dinein').checked
-        });
+        };
+        
+        data.push(newItem);
+        localStorage.setItem('myFoodList', JSON.stringify(data));
+        
         nameInput.value = '';
         resetPool();
+        alert(`已加入並存檔成功！`);
     }
 
     function startRandom() {
