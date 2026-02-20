@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一中街食物選擇器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #444;
+            --accent: #2c3e50;
+            --bg: #f4f4f4;
+            --card: #ffffff;
+            --border: #ddd;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            color: #333;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 25px;
+            letter-spacing: 1px;
+        }
+
+        .section {
+            border-top: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .label-text {
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: block;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"], select {
+            font-family: 'Noto Sans TC', sans-serif;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .btn-add {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+
+        .btn-random {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #result-container {
+            margin-top: 20px;
+            text-align: center;
+            min-height: 80px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 4px;
+            border: 1px dashed #ccc;
+        }
+
+        .result-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .status-info {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+            text-align: right;
+            height: 1.2rem;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #bbb;
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #eee;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>一中街食物選擇器</h1>
+
+    <div class="section">
+        <span class="label-text">新增店家選項</span>
+        <div class="input-group">
+            <input type="text" id="new-name" placeholder="請輸入店名">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="new-price">
+                    <option value="A">價錢 A</option>
+                    <option value="B">價錢 B</option>
+                    <option value="C">價錢 C</option>
+                </select>
+                <label style="font-size: 0.85rem;"><input type="checkbox" id="new-dinein"> 可內用</label>
+                <button class="btn-add" onclick="addNewFood()">加入</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <span class="label-text">篩選與模式</span>
+        <div style="margin-bottom: 8px; font-size: 0.9rem;">
+            價格：
+            <label><input type="checkbox" class="price-opt" value="A" checked onchange="resetPool()"> A</label>
+            <label><input type="checkbox" class="price-opt" value="B" checked onchange="resetPool()"> B</label>
+            <label><input type="checkbox" class="price-opt" value="C" checked onchange="resetPool()"> C</label>
+        </div>
+        <div style="font-size: 0.9rem; display: flex; justify-content: space-between;">
+            <label><input type="checkbox" id="dine-in-only" onchange="resetPool()"> 僅限內用</label>
+            <label style="color: #c0392b; font-weight: 700;">
+                <input type="checkbox" id="no-repeat" onchange="resetPool()"> 抽過不重複
+            </label>
+        </div>
+    </div>
+
+    <button class="btn-random" onclick="startRandom()">開始隨機抽取</button>
+
+    <div id="result-container">
+        <p id="display-text" style="color: #999; margin: 0;">等待抽取...</p>
+    </div>
+    
+    <div id="pool-status" class="status-info"></div>
+
+    <div class="footer">
+        POWERED BY GEMINI
+    </div>
+</div>
+
+<script>
+    let data = [
+        { name: "愛廣場職人咖哩", price: "A", dineIn: false },
+        { name: "愛廣場泰式", price: "B", dineIn: false },
+        { name: "品香滷味燙", price: "A", dineIn: false },
+        { name: "就醬拌", price: "A", dineIn: true },
+        { name: "興旺", price: "A", dineIn: true },
+        { name: "牛巴巴", price: "A", dineIn: true },
+        { name: "食也", price: "A-B", dineIn: true },
+        { name: "古早味便當", price: "A", dineIn: false },
+        { name: "九州拉麵", price: "B", dineIn: true },
+        { name: "全方位", price: "A", dineIn: true },
+        { name: "打餅舖", price: "A", dineIn: false },
+        { name: "半月燒", price: "A", dineIn: false },
+        { name: "燒餅飯糰", price: "A", dineIn: false },
+        { name: "釜山魷魚羹", price: "A", dineIn: true },
+        { name: "丸勝", price: "B-C", dineIn: true },
+        { name: "韓珍饌", price: "B", dineIn: true },
+        { name: "愛廣場丸龜製麵", price: "B-C", dineIn: true },
+        { name: "山西刀削麵", price: "A", dineIn: true },
+        { name: "姜蘇涼麵", price: "A", dineIn: true },
+        { name: "聚一波", price: "B-C", dineIn: true },
+        { name: "星空", price: "C", dineIn: true },
+        { name: "食其家", price: "B-C", dineIn: true },
+        { name: "三商巧福", price: "C", dineIn: true },
+        { name: "東海素食", price: "A", dineIn: true },
+        { name: "二口", price: "B", dineIn: true },
+        { name: "老林鹹水雞", price: "A-B", dineIn: false },
+        { name: "王印製麵", price: "A-B", dineIn: true },
+        { name: "蘇坤蔚", price: "B", dineIn: true },
+        { name: "嶼你海南雞飯", price: "B-C", dineIn: true },
+        { name: "偈亭", price: "B-C", dineIn: true },
+        { name: "食之初", price: "A", dineIn: true },
+        { name: "漢堡王", price: "B-C", dineIn: true }
+    ];
+
+    let currentPool = [];
+
+    function resetPool() {
+        const selectedPrices = Array.from(document.querySelectorAll('.price-opt:checked')).map(el => el.value);
+        const dineInOnly = document.getElementById('dine-in-only').checked;
+
+        currentPool = data.filter(item => {
+            const priceMatch = selectedPrices.some(p => item.price.includes(p));
+            const dineInMatch = dineInOnly ? item.dineIn : true;
+            return priceMatch && dineInMatch;
+        });
+        
+        updateStatus();
+    }
+
+    function updateStatus() {
+        const statusDiv = document.getElementById('pool-status');
+        const noRepeat = document.getElementById('no-repeat').checked;
+        if (noRepeat) {
+            statusDiv.innerText = `剩餘可抽項目：${currentPool.length}`;
+        } else {
+            statusDiv.innerText = "";
+        }
+    }
+
+    function addNewFood() {
+        const nameInput = document.getElementById('new-name');
+        const name = nameInput.value.trim();
+        if (!name) return;
+        data.push({
+            name: name,
+            price: document.getElementById('new-price').value,
+            dineIn: document.getElementById('new-dinein').checked
+        });
+        nameInput.value = '';
+        resetPool();
+    }
+
+    function startRandom() {
+        const noRepeat = document.getElementById('no-repeat').checked;
+        if (!noRepeat || currentPool.length === 0) resetPool();
+        
+        if (currentPool.length === 0) {
+            alert('池子裡已經沒有符合條件的店家囉！');
+            return;
+        }
+
+        let ticks = 0;
+        const timer = setInterval(() => {
+            const tempItem = currentPool[Math.floor(Math.random() * currentPool.length)];
+            document.getElementById('result-container').innerHTML = `<p class="result-name" style="color: #999;">${tempItem.name}</p>`;
+            ticks++;
+            if (ticks > 10) {
+                clearInterval(timer);
+                finalizeSelection();
+            }
+        }, 60);
+    }
+
+    function finalizeSelection() {
+        const noRepeat = document.getElementById('no-repeat').checked;
+        const index = Math.floor(Math.random() * currentPool.length);
+        const finalItem = currentPool[index];
+
+        if (noRepeat) currentPool.splice(index, 1);
+
+        const dineInLabel = finalItem.dineIn ? '<span class="tag">可內用</span>' : '<span class="tag">僅外帶</span>';
+        document.getElementById('result-container').innerHTML = `
+            <div class="result-name">${finalItem.name}</div>
+            <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                價格: ${finalItem.price} ${dineInLabel}
+            </div>
+        `;
+        updateStatus();
+    }
+
+    resetPool();
+</script>
+
+</body>
+</html>
